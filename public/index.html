@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💰 भुगतान घोषणाकर्ता</title>
+    <meta name="theme-color" content="#10b981">
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #1e3a8a 0%, #10b981 100%); min-height: 100vh; color: #333; }
+        
+        .container { max-width: 900px; margin: 0 auto; padding: 15px; }
+        
+        /* HEADER */
+        header { background: rgba(255,255,255,0.95); padding: 25px; border-radius: 20px 20px 0 0; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 5px; }
+        h1 { color: #1e40af; font-size: 2.8rem; margin-bottom: 10px; }
+        .subtitle { color: #4b5563; font-size: 1.2rem; }
+        
+        /* MAIN CARD */
+        .main-card { background: rgba(255,255,255,0.98); padding: 25px; border-radius: 0 0 20px 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); }
+        
+        /* STATUS */
+        .status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+        .status-box { background: linear-gradient(135deg, #f8fafc, #e2e8f0); padding: 18px; border-radius: 12px; border: 2px solid #e5e7eb; transition: all 0.3s; }
+        .status-box.active { border-color: #10b981; background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+        .status-box.inactive { border-color: #ef4444; background: linear-gradient(135deg, #fee2e2, #fecaca); }
+        .status-title { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .status-value { font-size: 16px; font-weight: 700; color: #1f2937; }
+        
+        /* BUTTONS */
+        .btn-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+        .btn { padding: 18px; border: none; border-radius: 12px; font-size: 17px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: all 0.3s; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; }
+        .btn-secondary { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+        .btn-icon { font-size: 22px; }
+        
+        /* INSTALL SECTION */
+        .install-section { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; padding: 20px; border-radius: 15px; margin: 20px 0; display: none; text-align: center; animation: fadeIn 0.5s; }
+        .install-section.show { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* PAYMENTS */
+        .payments-section { margin: 25px 0; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 3px solid #e5e7eb; }
+        .section-header h3 { color: #1f2937; font-size: 1.8rem; }
+        .payments-list { max-height: 450px; overflow-y: auto; padding-right: 10px; }
+        .payment-card { background: linear-gradient(135deg, #f8fafc, #f1f5f9); padding: 20px; margin-bottom: 12px; border-radius: 15px; border-left: 5px solid #10b981; animation: slideIn 0.5s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .payment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .payment-amount { font-size: 32px; font-weight: 800; color: #059669; text-shadow: 1px 1px 3px rgba(0,0,0,0.1); }
+        .payment-sender { font-size: 18px; font-weight: 700; color: #1e40af; }
+        .payment-details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; font-size: 15px; color: #4b5563; }
+        
+        /* LOGS */
+        .logs-section { background: linear-gradient(135deg, #1f2937, #111827); color: white; padding: 20px; border-radius: 15px; margin-top: 25px; }
+        .logs-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .logs-header h3 { color: white; font-size: 1.5rem; }
+        .logs-list { font-family: 'Monaco', 'Menlo', 'Consolas', monospace; font-size: 13px; max-height: 250px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; }
+        .log-entry { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .log-time { color: #9ca3af; margin-right: 10px; }
+        
+        /* TOAST */
+        .toast { position: fixed; bottom: 25px; right: 25px; background: linear-gradient(135deg, #059669, #047857); color: white; padding: 18px 30px; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); z-index: 10000; display: none; animation: slideInRight 0.4s ease; }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .status-grid, .btn-group { grid-template-columns: 1fr; }
+            .payment-details { grid-template-columns: 1fr; }
+            h1 { font-size: 2.2rem; }
+        }
+        
+        /* UTILITY */
+        .hidden { display: none !important; }
+        .badge { background: #10b981; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #059669; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <h1>💰 भुगतान घोषणाकर्ता</h1>
+            <p class="subtitle">स्वचालित भुगतान घोषणा - SMS के अनुसार</p>
+        </header>
+        
+        <!-- INSTALL PROMPT -->
+        <div class="install-section" id="installPrompt">
+            <div style="font-size: 22px; margin-bottom: 10px;">📱 ऐप इंस्टॉल करें</div>
+            <p style="margin-bottom: 15px; opacity: 0.9;">बेहतर अनुभव के लिए ऐप इंस्टॉल करें</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button id="installNowBtn" class="btn" style="background: white; color: #f59e0b; min-width: 150px;">
+                    <span class="btn-icon">📱</span> इंस्टॉल करें
+                </button>
+                <button id="installLaterBtn" class="btn" style="background: transparent; color: white; border: 2px solid white;">
+                    बाद में
+                </button>
+            </div>
+        </div>
+        
+        <!-- MAIN CARD -->
+        <div class="main-card">
+            <!-- STATUS -->
+            <div class="status-grid">
+                <div class="status-box" id="apiStatusBox">
+                    <div class="status-title">बैकएंड स्थिति</div>
+                    <div class="status-value" id="apiStatusText">जाँच हो रही...</div>
+                </div>
+                <div class="status-box" id="ttsStatusBox">
+                    <div class="status-title">आवाज़ स्थिति</div>
+                    <div class="status-value" id="ttsStatusText">जाँच हो रही...</div>
+                </div>
+                <div class="status-box" id="monitorStatusBox">
+                    <div class="status-title">निगरानी</div>
+                    <div class="status-value" id="monitorStatusText">बंद है</div>
+                </div>
+            </div>
+            
+            <!-- BUTTONS -->
+            <div class="btn-group">
+                <button id="startBtn" class="btn btn-primary">
+                    <span class="btn-icon">▶</span>
+                    निगरानी शुरू करें
+                </button>
+                <button id="testCreditBtn" class="btn btn-success">
+                    <span class="btn-icon">💳</span>
+                    क्रेडिट टेस्ट
+                </button>
+                <button id="testDebitBtn" class="btn btn-danger">
+                    <span class="btn-icon">💸</span>
+                    डेबिट टेस्ट
+                </button>
+            </div>
+            
+            <!-- SETTINGS -->
+            <div style="background: #f8fafc; padding: 20px; border-radius: 15px; margin-bottom: 25px;">
+                <h3 style="margin-bottom: 15px; color: #1f2937;">⚙️ सेटिंग्स</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600;">चेक अंतराल:</label>
+                        <select id="intervalSelect" style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid #d1d5db;">
+                            <option value="2000" selected>2 सेकंड</option>
+                            <option value="5000">5 सेकंड</option>
+                            <option value="10000">10 सेकंड</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="autoStartToggle" checked style="width: 20px; height: 20px;">
+                            <span>ऑटो-स्टार्ट निगरानी</span>
+                        </label>
+                    </div>
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="voiceToggle" checked style="width: 20px; height: 20px;">
+                            <span>ऑटो आवाज़ घोषणा</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PAYMENTS -->
+            <div class="payments-section">
+                <div class="section-header">
+                    <h3>💳 हाल के लेन-देन</h3>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <span class="badge" id="paymentCount">0</span>
+                        <button id="clearBtn" class="btn" style="padding: 10px 20px; background: #6b7280; color: white;">
+                            साफ़ करें
+                        </button>
+                    </div>
+                </div>
+                <div class="payments-list" id="paymentsList">
+                    <div style="text-align: center; padding: 50px 20px; color: #9ca3af;">
+                        <div style="font-size: 64px; margin-bottom: 20px;">📭</div>
+                        <p style="font-size: 18px; margin-bottom: 10px;">अभी तक कोई लेन-देन नहीं</p>
+                        <small>जैसे ही नया SMS आएगा, यहाँ दिखेगा</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SMS PREVIEW -->
+            <div style="background: #fef3c7; padding: 20px; border-radius: 15px; margin: 25px 0; border-left: 5px solid #f59e0b;">
+                <h3 style="color: #92400e; margin-bottom: 15px;">📱 SMS फॉर्मेट उदाहरण</h3>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="background: white; padding: 15px; border-radius: 10px;">
+                        <div style="color: #059669; font-weight: bold; margin-bottom: 5px;">क्रेडिट SMS:</div>
+                        <div style="font-size: 14px; color: #4b5563;">
+                            "developer happy aapke account me 200 rahul ke dwara prapt huye"
+                        </div>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 10px;">
+                        <div style="color: #dc2626; font-weight: bold; margin-bottom: 5px;">डेबिट SMS:</div>
+                        <div style="font-size: 14px; color: #4b5563;">
+                            "developer happy aapke account se 10 rupya debit rahul ke account me credit huye"
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- LOGS -->
+            <div class="logs-section">
+                <div class="logs-header">
+                    <h3>📝 गतिविधि लॉग</h3>
+                    <button id="clearLogsBtn" class="btn" style="padding: 8px 16px; background: rgba(255,255,255,0.2); color: white;">
+                        लॉग साफ़ करें
+                    </button>
+                </div>
+                <div class="logs-list" id="logsList">
+                    <div class="log-entry" style="color: #10b981;">
+                        <span class="log-time">[<span id="currentTime">10:30:45</span>]</span>
+                        <span>सिस्टम शुरू हो रहा है...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- FOOTER -->
+        <footer style="text-align: center; padding: 20px; color: white; margin-top: 20px;">
+            <p>भुगतान घोषणाकर्ता v2.0 | बैकएंड: <span id="backendUrl">कनेक्टिंग...</span></p>
+            <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">SMS के अनुसार स्वचालित घोषणा</p>
+        </footer>
+    </div>
+    
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+    
+    <!-- SCRIPT -->
+    <script>
+        class SmartPaymentAnnouncer {
+            constructor() {
+                // 🔥 SET YOUR BACKEND URL HERE
+                this.backendUrl = 'https://h4ppy-api-getway.vercel.app';
+                
+                this.isMonitoring = false;
+                this.monitorInterval = null;
+                this.deferredPrompt = null;
+                this.isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+                this.announcedIds = new Set();
+                this.hindiVoice = null;
+                
+                this.init();
+            }
+            
+            async init() {
+                console.log('🚀 स्मार्ट भुगतान ऐप शुरू हो रहा है...');
+                this.updateTime();
+                setInterval(() => this.updateTime(), 1000);
+                
+                this.cacheElements();
+                this.setupEventListeners();
+                await this.setupPWA();
+                await this.setupHindiTTS();
+                await this.checkBackend();
+                this.loadSettings();
+                
+                // Auto-start monitoring
+                if (localStorage.getItem('autoStart') !== 'false') {
+                    setTimeout(() => this.startMonitoring(), 1000);
+                }
+                
+                this.log('✅ सिस्टम तैयार है - SMS के अनुसार घोषणा करेगा');
+            }
+            
+            cacheElements() {
+                this.elements = {
+                    startBtn: document.getElementById('startBtn'),
+                    testCreditBtn: document.getElementById('testCreditBtn'),
+                    testDebitBtn: document.getElementById('testDebitBtn'),
+                    installPrompt: document.getElementById('installPrompt'),
+                    installNowBtn: document.getElementById('installNowBtn'),
+                    installLaterBtn: document.getElementById('installLaterBtn'),
+                    clearBtn: document.getElementById('clearBtn'),
+                    clearLogsBtn: document.getElementById('clearLogsBtn'),
+                    paymentsList: document.getElementById('paymentsList'),
+                    logsList: document.getElementById('logsList'),
+                    paymentCount: document.getElementById('paymentCount'),
+                    backendUrl: document.getElementById('backendUrl'),
+                    toast: document.getElementById('toast'),
+                    apiStatusBox: document.getElementById('apiStatusBox'),
+                    apiStatusText: document.getElementById('apiStatusText'),
+                    ttsStatusBox: document.getElementById('ttsStatusBox'),
+                    ttsStatusText: document.getElementById('ttsStatusText'),
+                    monitorStatusBox: document.getElementById('monitorStatusBox'),
+                    monitorStatusText: document.getElementById('monitorStatusText'),
+                    autoStartToggle: document.getElementById('autoStartToggle'),
+                    voiceToggle: document.getElementById('voiceToggle'),
+                    intervalSelect: document.getElementById('intervalSelect')
+                };
+                
+                this.elements.backendUrl.textContent = this.backendUrl;
+            }
+            
+            setupEventListeners() {
+                // Start/Stop monitoring
+                this.elements.startBtn.addEventListener('click', () => {
+                    this.isMonitoring ? this.stopMonitoring() : this.startMonitoring();
+                });
+                
+                // Test credit
+                this.elements.testCreditBtn.addEventListener('click', () => {
+                    this.testCreditAnnouncement();
+                });
+                
+                // Test debit
+                this.elements.testDebitBtn.addEventListener('click', () => {
+                    this.testDebitAnnouncement();
+                });
+                
+                // Install buttons
+                this.elements.installNowBtn.addEventListener('click', () => this.installPWA());
+                this.elements.installLaterBtn.addEventListener('click', () => this.hideInstallPrompt());
+                
+                // Clear buttons
+                this.elements.clearBtn.addEventListener('click', () => this.clearPayments());
+                this.elements.clearLogsBtn.addEventListener('click', () => this.clearLogs());
+                
+                // Settings
+                this.elements.autoStartToggle.addEventListener('change', (e) => {
+                    localStorage.setItem('autoStart', e.target.checked);
+                });
+                
+                this.elements.voiceToggle.addEventListener('change', (e) => {
+                    localStorage.setItem('autoVoice', e.target.checked);
+                    this.showToast(e.target.checked ? 'ऑटो आवाज़ सक्षम' : 'ऑटो आवाज़ अक्षम');
+                });
+                
+                this.elements.intervalSelect.addEventListener('change', (e) => {
+                    localStorage.setItem('checkInterval', e.target.value);
+                    if (this.isMonitoring) {
+                        this.stopMonitoring();
+                        this.startMonitoring();
+                    }
+                });
+            }
+            
+            updateTime() {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('hi-IN', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit',
+                    hour12: false 
+                });
+                document.getElementById('currentTime').textContent = timeStr;
+            }
+            
+            async setupPWA() {
+                console.log('🔧 PWA सेटअप हो रहा है...');
+                
+                // Check if already installed
+                if (this.isStandalone || window.navigator.standalone === true) {
+                    console.log('📱 पहले से इंस्टॉल है');
+                    this.hideInstallUI();
+                    return;
+                }
+                
+                // Listen for beforeinstallprompt event
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    console.log('📱 इंस्टॉल प्रॉम्प्ट उपलब्ध!');
+                    e.preventDefault();
+                    this.deferredPrompt = e;
+                    
+                    // Show install prompt after 2 seconds
+                    setTimeout(() => {
+                        if (this.deferredPrompt && !this.isStandalone) {
+                            this.elements.installPrompt.classList.add('show');
+                        }
+                    }, 2000);
+                });
+                
+                // Listen for appinstalled event
+                window.addEventListener('appinstalled', (e) => {
+                    console.log('🎉 ऐप सफलतापूर्वक इंस्टॉल हुआ!');
+                    this.isStandalone = true;
+                    this.hideInstallUI();
+                    this.showToast('ऐप सफलतापूर्वक इंस्टॉल हुआ!');
+                    this.log('ऐप इंस्टॉल हुआ');
+                });
+                
+                // Register Service Worker
+                await this.registerServiceWorker();
+            }
+            
+            async registerServiceWorker() {
+                if ('serviceWorker' in navigator) {
+                    try {
+                        const registration = await navigator.serviceWorker.register('/sw.js');
+                        console.log('✅ सर्विस वर्कर रजिस्टर्ड:', registration);
+                        this.log('सर्विस वर्कर रजिस्टर्ड');
+                    } catch (error) {
+                        console.log('❌ सर्विस वर्कर रजिस्ट्रेशन फेल:', error);
+                        this.log('सर्विस वर्कर फेल', true);
+                    }
+                }
+            }
+            
+            async setupHindiTTS() {
+                if (!('speechSynthesis' in window)) {
+                    this.updateStatus('tts', false, 'TTS समर्थित नहीं');
+                    this.log('TTS समर्थित नहीं', true);
+                    return;
+                }
+                
+                // Wait for voices to load
+                const voices = speechSynthesis.getVoices();
+                if (voices.length > 0) {
+                    this.findHindiVoice(voices);
+                } else {
+                    speechSynthesis.addEventListener('voiceschanged', () => {
+                        this.findHindiVoice(speechSynthesis.getVoices());
+                    });
+                }
+                
+                setTimeout(() => {
+                    if (this.hindiVoice) {
+                        this.updateStatus('tts', true, 'हिंदी आवाज़ उपलब्ध');
+                        this.log('हिंदी आवाज़ सेटअप हुई');
+                    } else {
+                        this.updateStatus('tts', true, 'अंग्रेजी आवाज़ उपलब्ध');
+                        this.log('हिंदी आवाज़ नहीं मिली, अंग्रेजी का उपयोग करेंगे');
+                    }
+                }, 1000);
+            }
+            
+            findHindiVoice(voices) {
+                // Try to find Hindi voice
+                const hindiVoices = voices.filter(voice => 
+                    voice.lang.includes('hi') || 
+                    voice.name.includes('Hindi') ||
+                    voice.name.includes('India')
+                );
+                
+                if (hindiVoices.length > 0) {
+                    this.hindiVoice = hindiVoices[0];
+                    console.log('🎤 हिंदी आवाज़ मिली:', this.hindiVoice.name);
+                } else {
+                    // Fallback to any Indian or English voice
+                    const indianVoice = voices.find(v => v.lang.includes('IN'));
+                    const englishVoice = voices.find(v => v.lang.startsWith('en'));
+                    this.hindiVoice = indianVoice || englishVoice || voices[0];
+                    console.log('🎤 वैकल्पिक आवाज़ चुनी:', this.hindiVoice?.name);
+                }
+            }
+            
+            async checkBackend() {
+                try {
+                    const startTime = Date.now();
+                    const response = await fetch(this.backendUrl);
+                    
+                    if (response.ok) {
+                        const ping = Date.now() - startTime;
+                        this.updateStatus('api', true, `कनेक्टेड (${ping}ms)`);
+                        this.log(`बैकएंड कनेक्टेड: ${ping}ms`);
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    this.updateStatus('api', false, 'कनेक्शन विफल');
+                    this.log(`बैकएंड कनेक्शन फेल: ${error.message}`, true);
+                }
+            }
+            
+            startMonitoring() {
+                if (this.isMonitoring) return;
+                
+                this.isMonitoring = true;
+                this.elements.startBtn.innerHTML = '<span class="btn-icon">⏸</span> निगरानी रोकें';
+                this.elements.monitorStatusBox.classList.add('active');
+                this.elements.monitorStatusText.textContent = 'चल रहा है';
+                
+                // Check immediately
+                this.checkForNewPayments();
+                
+                // Set interval for checking (2 seconds by default)
+                const interval = parseInt(this.elements.intervalSelect.value);
+                this.monitorInterval = setInterval(() => {
+                    this.checkForNewPayments();
+                }, interval);
+                
+                this.showToast('निगरानी शुरू हुई - हर ' + (interval/1000) + ' सेकंड में चेक');
+                this.log(`निगरानी शुरू हुई (${interval}ms अंतराल)`);
+            }
+            
+            stopMonitoring() {
+                this.isMonitoring = false;
+                this.elements.startBtn.innerHTML = '<span class="btn-icon">▶</span> निगरानी शुरू करें';
+                this.elements.monitorStatusBox.classList.remove('active');
+                this.elements.monitorStatusText.textContent = 'बंद है';
+                
+                if (this.monitorInterval) {
+                    clearInterval(this.monitorInterval);
+                    this.monitorInterval = null;
+                }
+                
+                this.showToast('निगरानी रोकी गई');
+                this.log('निगरानी रोकी गई');
+            }
+            
+            async checkForNewPayments() {
+                try {
+                    const response = await fetch(`${this.backendUrl}/api/check-new-sms`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.announcements?.length > 0) {
+                        this.log(`${data.announcements.length} नया SMS मिला`);
+                        
+                        for (const payment of data.announcements) {
+                            if (!this.announcedIds.has(payment.id)) {
+                                await this.processSMSAnnouncement(payment);
+                                this.announcedIds.add(payment.id);
+                                
+                                // Mark as announced on backend
+                                await fetch(`${this.backendUrl}/api/mark-announced`, {
+                                    method: 'POST',
+                                    headers: {'Content-Type': 'application/json'},
+                                    body: JSON.stringify({ announcementId: payment.id })
+                                });
+                            }
+                        }
+                    }
+                    
+                    // Update last check time
+                    const now = new Date();
+                    this.elements.monitorStatusText.textContent = `अंतिम जाँच: ${now.toLocaleTimeString('hi-IN', {hour: '2-digit', minute: '2-digit'})}`;
+                    
+                } catch (error) {
+                    this.log(`चेक एरर: ${error.message}`, true);
+                }
+            }
+            
+            // 🔥 SMART ANNOUNCEMENT BASED ON SMS CONTENT
+            async processSMSAnnouncement(payment) {
+                const { amount, sender, bank, timestamp, originalSMS } = payment;
+                const smsText = originalSMS || '';
+                
+                // Analyze SMS content and create appropriate announcement
+                const announcement = this.createSmartAnnouncement(smsText, amount, sender);
+                
+                // Add to UI
+                this.addPaymentToUI(payment, announcement.type);
+                
+                // Play TTS if enabled
+                if (this.elements.voiceToggle.checked && this.hindiVoice) {
+                    this.playHindiTTS(announcement.message);
+                }
+                
+                // Show notification
+                if (Notification.permission === 'granted') {
+                    new Notification(announcement.title, {
+                        body: announcement.message,
+                        icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjE5MiIgaGVpZ2h0PSIxOTIiIHJ4PSI5NiIgZmlsbD0iIzEwYjk4MSIvPjx0ZXh0IHg9Ijk2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iODAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmaWxsPSJ3aGl0ZSI+8J+SsDwvdGV4dD48L3N2Zz4='
+                    });
+                }
+                
+                // Show toast
+                this.showToast(announcement.message);
+                
+                this.log(`${announcement.type}: ₹${amount} - ${sender}`);
+            }
+            
+            createSmartAnnouncement(smsText, amount, sender) {
+                // Convert SMS to lowercase for analysis
+                const text = smsText.toLowerCase();
+                
+                // Check for CREDIT transaction
+                if (text.includes('prapt') || text.includes('credited') || text.includes('received') || 
+                    text.includes('आपके खाते में') || text.includes('प्राप्त')) {
+                    
+                    // Extract name from SMS (simplified logic)
+                    let name = this.extractNameFromSMS(text);
+                    
+                    return {
+                        type: 'CREDIT',
+                        title: '💰 नया क्रेडिट',
+                        message: `आपके खाते में ${amount} रुपये ${name || sender} के द्वारा प्राप्त हुए`
+                    };
+                }
+                
+                // Check for DEBIT transaction
+                else if (text.includes('debit') || text.includes('निकाले') || text.includes('खर्च') || 
+                         text.includes('आपके खाते से')) {
+                    
+                    let name = this.extractNameFromSMS(text);
+                    
+                    return {
+                        type: 'DEBIT',
+                        title: '💸 नया डेबिट',
+                        message: `आपके खाते से ${amount} रुपये ${name || sender} के खाते में ट्रांसफर हुए`
+                    };
+                }
+                
+                // Default announcement
+                return {
+                    type: 'PAYMENT',
+                    title: '💳 नया भुगतान',
+                    message: `${amount} रुपये का भुगतान ${sender} से प्राप्त हुआ`
+                };
+            }
+            
+            extractNameFromSMS(smsText) {
+                // Simple name extraction logic
+                const text = smsText.toLowerCase();
+                
+                // Common patterns in Hindi SMS
+                if (text.includes('rahul')) return 'राहुल';
+                if (text.includes('amit')) return 'अमित';
+                if (text.includes('rohan')) return 'रोहन';
+                if (text.includes('priya')) return 'प्रिया';
+                if (text.includes('neha')) return 'नेहा';
+                if (text.includes('sanjay')) return 'संजय';
+                if (text.includes('vikas')) return 'विकास';
+                
+                // Try to extract name after 'ke dwara' or 'se'
+                const patterns = [
+                    /(\w+)\s+ke\s+dwara/i,
+                    /(\w+)\s+se\s+prapt/i,
+                    /from\s+(\w+)/i,
+                    /by\s+(\w+)/i
+                ];
+                
+                for (const pattern of patterns) {
+                    const match = smsText.match(pattern);
+                    if (match && match[1]) {
+                        return match[1];
+                    }
+                }
+                
+                return null;
+            }
+            
+            playHindiTTS(text) {
+                if (!('speechSynthesis' in window) || speechSynthesis.speaking) return;
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // Configure for Hindi/Indian voice
+                if (this.hindiVoice) {
+                    utterance.voice = this.hindiVoice;
+                    utterance.lang = 'hi-IN';
+                } else {
+                    utterance.lang = 'en-IN';
+                }
+                
+                utterance.rate = 0.9;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                
+                speechSynthesis.speak(utterance);
+            }
+            
+            addPaymentToUI(payment, type = 'PAYMENT') {
+                const { amount, sender, bank, timestamp, id } = payment;
+                
+                // Remove empty state if present
+                const emptyState = this.elements.paymentsList.querySelector('.empty-state');
+                if (emptyState) {
+                    emptyState.remove();
+                }
+                
+                // Determine color based on type
+                let borderColor = '#10b981'; // Green for credit
+                let typeText = 'क्रेडिट';
+                let typeIcon = '💳';
+                
+                if (type === 'DEBIT') {
+                    borderColor = '#ef4444'; // Red for debit
+                    typeText = 'डेबिट';
+                    typeIcon = '💸';
+                }
+                
+                // Create payment element
+                const div = document.createElement('div');
+                div.className = 'payment-card';
+                div.id = `payment-${id}`;
+                div.style.borderLeftColor = borderColor;
+                
+                const time = new Date(timestamp).toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' });
+                const date = new Date(timestamp).toLocaleDateString('hi-IN');
+                
+                div.innerHTML = `
+                    <div class="payment-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="font-size: 24px;">${typeIcon}</div>
+                            <div>
+                                <div class="payment-amount">₹${amount}</div>
+                                <div style="font-size: 12px; color: ${borderColor}; font-weight: bold;">${typeText}</div>
+                            </div>
+                        </div>
+                        <div class="payment-sender">${sender}</div>
+                    </div>
+                    <div class="payment-details">
+                        <div><strong>बैंक:</strong> ${bank || 'अज्ञात'}</div>
+                        <div><strong>समय:</strong> ${time}</div>
+                        <div><strong>तारीख:</strong> ${date}</div>
+                    </div>
+                `;
+                
+                // Add to top
+                this.elements.paymentsList.prepend(div);
+                
+                // Update count
+                const count = this.elements.paymentsList.children.length;
+                this.elements.paymentCount.textContent = count;
+                
+                // Keep only 20 payments
+                if (count > 20) {
+                    this.elements.paymentsList.lastChild.remove();
+                }
+            }
+            
+            testCreditAnnouncement() {
+                const testSMS = "developer happy aapke account me 200 rahul ke dwara prapt huye";
+                const testPayment = {
+                    id: `test_credit_${Date.now()}`,
+                    amount: 200,
+                    sender: 'राहुल',
+                    bank: 'टेस्ट बैंक',
+                    timestamp: new Date().toISOString(),
+                    originalSMS: testSMS
+                };
+                
+                this.processSMSAnnouncement(testPayment);
+                this.log('क्रेडिट टेस्ट घोषणा');
+            }
+            
+            testDebitAnnouncement() {
+                const testSMS = "developer happy aapke account se 10 rupya debit rahul ke account me credit huye";
+                const testPayment = {
+                    id: `test_debit_${Date.now()}`,
+                    amount: 10,
+                    sender: 'राहुल',
+                    bank: 'टेस्ट बैंक',
+                    timestamp: new Date().toISOString(),
+                    originalSMS: testSMS
+                };
+                
+                this.processSMSAnnouncement(testPayment);
+                this.log('डेबिट टेस्ट घोषणा');
+            }
+            
+            installPWA() {
+                if (!this.deferredPrompt) {
+                    this.showToast('इंस्टॉल उपलब्ध नहीं');
+                    return;
+                }
+                
+                console.log('📱 इंस्टॉल ट्रिगर हो रहा है...');
+                this.deferredPrompt.prompt();
+                
+                this.deferredPrompt.userChoice.then((choiceResult) => {
+                    console.log('यूजर च्वाइस:', choiceResult.outcome);
+                    this.deferredPrompt = null;
+                    
+                    if (choiceResult.outcome === 'accepted') {
+                        this.hideInstallUI();
+                        this.showToast('ऐप इंस्टॉल हो रहा है...');
+                    }
+                });
+            }
+            
+            hideInstallPrompt() {
+                this.elements.installPrompt.classList.remove('show');
+            }
+            
+            hideInstallUI() {
+                this.elements.installPrompt.classList.remove('show');
+            }
+            
+            clearPayments() {
+                this.elements.paymentsList.innerHTML = `
+                    <div style="text-align: center; padding: 50px 20px; color: #9ca3af;">
+                        <div style="font-size: 64px; margin-bottom: 20px;">📭</div>
+                        <p style="font-size: 18px; margin-bottom: 10px;">अभी तक कोई लेन-देन नहीं</p>
+                        <small>जैसे ही नया SMS आएगा, यहाँ दिखेगा</small>
+                    </div>
+                `;
+                this.elements.paymentCount.textContent = '0';
+                this.announcedIds.clear();
+                this.log('सभी लेन-देन साफ़ किए गए');
+            }
+            
+            clearLogs() {
+                this.elements.logsList.innerHTML = `
+                    <div class="log-entry" style="color: #10b981;">
+                        <span class="log-time">[<span id="currentTime">${new Date().toLocaleTimeString('hi-IN', {hour: '2-digit', minute: '2-digit', second: '2-digit'})}</span>]</span>
+                        <span>लॉग साफ़ किए गए</span>
+                    </div>
+                `;
+            }
+            
+            updateStatus(type, success, message) {
+                const box = this.elements[`${type}Box`];
+                const text = this.elements[`${type}Text`];
+                
+                if (box && text) {
+                    box.classList.toggle('active', success);
+                    box.classList.toggle('inactive', !success);
+                    text.textContent = message;
+                }
+            }
+            
+            log(message, isError = false) {
+                const time = new Date().toLocaleTimeString('hi-IN', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit',
+                    hour12: false 
+                });
+                
+                const div = document.createElement('div');
+                div.className = 'log-entry';
+                div.style.color = isError ? '#f87171' : '#34d399';
+                div.innerHTML = `<span class="log-time">[${time}]</span> <span>${message}</span>`;
+                
+                this.elements.logsList.prepend(div);
+                
+                // Keep only 50 logs
+                if (this.elements.logsList.children.length > 50) {
+                    this.elements.logsList.removeChild(this.elements.logsList.lastChild);
+                }
+            }
+            
+            showToast(message) {
+                const toast = this.elements.toast;
+                toast.textContent = message;
+                toast.style.display = 'block';
+                
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 3000);
+            }
+            
+            loadSettings() {
+                this.elements.autoStartToggle.checked = localStorage.getItem('autoStart') !== 'false';
+                this.elements.voiceToggle.checked = localStorage.getItem('autoVoice') !== 'false';
+                
+                const interval = localStorage.getItem('checkInterval') || '2000'; // Default 2 seconds
+                this.elements.intervalSelect.value = interval;
+            }
+        }
+        
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            // Request notification permission
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+            
+            // Create app instance
+            window.app = new SmartPaymentAnnouncer();
+            
+            // Debug function
+            window.debugApp = function() {
+                console.log('=== ऐप डीबग ===');
+                console.log('बैकएंड URL:', window.app.backendUrl);
+                console.log('PWA इंस्टॉल्ड:', window.app.isStandalone);
+                console.log('हिंदी आवाज़:', window.app.hindiVoice?.name);
+                console.log('निगरानी:', window.app.isMonitoring);
+            };
+        });
+    </script>
+</body>
+</html>
