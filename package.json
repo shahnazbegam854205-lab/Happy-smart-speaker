@@ -1,0 +1,11 @@
+{
+    "name": "payment-announcer-pwa",
+    "version": "1.0.0",
+    "description": "PWA frontend for Payment Announcer",
+    "scripts": {
+        "dev": "serve public -p 3000"
+    },
+    "devDependencies": {
+        "serve": "^14.0.0"
+    }
+}
