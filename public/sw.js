@@ -1,23 +1,37 @@
-// Service Worker
-const CACHE_NAME = 'payment-app-v1';
+// Service Worker for Payment App
+const CACHE_NAME = 'hindi-payment-announcer-v1';
+const urlsToCache = ['/', '/index.html'];
 
 self.addEventListener('install', event => {
-    console.log('Service Worker installing');
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(['/']))
+            .then(cache => cache.addAll(urlsToCache))
             .then(() => self.skipWaiting())
     );
 });
 
 self.addEventListener('activate', event => {
-    console.log('Service Worker activating');
-    event.waitUntil(self.clients.claim());
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    if (cacheName !== CACHE_NAME) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        }).then(() => self.clients.claim())
+    );
 });
 
 self.addEventListener('fetch', event => {
     event.respondWith(
         caches.match(event.request)
-            .then(response => response || fetch(event.request))
+            .then(response => {
+                if (response) {
+                    return response;
+                }
+                return fetch(event.request);
+            })
     );
 });
