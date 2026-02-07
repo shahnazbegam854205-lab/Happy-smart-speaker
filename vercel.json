@@ -2,14 +2,29 @@
     "version": 2,
     "builds": [
         {
-            "src": "public/**",
+            "src": "*.html",
+            "use": "@vercel/static"
+        },
+        {
+            "src": "*.js",
+            "use": "@vercel/static"
+        },
+        {
+            "src": "*.json",
             "use": "@vercel/static"
         }
     ],
     "routes": [
         {
+            "src": "/sw.js",
+            "headers": {
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Content-Type": "application/javascript"
+            }
+        },
+        {
             "src": "/(.*)",
-            "dest": "/public/$1"
+            "dest": "/index.html"
         }
     ]
 }
