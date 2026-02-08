@@ -1,6 +1,6 @@
 // Service Worker for Background Notifications
 const CACHE_NAME = 'payment-background-v3';
-const API_BASE_URL = 'https://YOUR-BACKEND-API.vercel.app'; // 🔥 YOUR BACKEND URL
+const API_BASE_URL = 'https://h4ppy-api-getway.vercel.app'; // 🔥 YOUR BACKEND URL
 
 // Install Service Worker
 self.addEventListener('install', (event) => {
